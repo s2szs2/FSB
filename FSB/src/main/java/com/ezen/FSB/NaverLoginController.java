@@ -49,7 +49,7 @@ public class NaverLoginController {
 	@Autowired
 	private LoginMapper loginMapper;
 	
-	 // 네이버 로그인 성공 시 
+	 // 네이버 로그인 성공 시
 	 @SuppressWarnings("null")
 	 @RequestMapping(value = "naver_login_ok", method = { RequestMethod.GET, RequestMethod.POST })
 	 public String callback(HttpServletRequest req, Model model, @RequestParam String code, @RequestParam String state, HttpSession session) throws IOException, ParseException {
