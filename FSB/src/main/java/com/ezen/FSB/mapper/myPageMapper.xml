@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+ 
+<mapper namespace="com.ezen.FSB.mapper.myPageMapper">  
+
+   <!--아이디 넣어서 해당 멤버 닉네임 바꾸기 --> 
+  <update id="changeNick" parameterType="MemberDTO">
+      update f_member set mem_nickname = #{mem_nickname} where mem_id = #{mem_id}
+   </update>
+   
+   <!--  아이디 넣어서 해당 멤버 핸드폰 번호 변경하기  --> 
+   <update id="changePhone" parameterType="MemberDTO">
+      update f_member set mem_hp1 = #{mem_hp1}, mem_hp2 = #{mem_hp2}, mem_hp3 = #{mem_hp3}  where mem_id = #{mem_id}
+   </update>
+   
+   
+      <!-- 아이디 넣고해당 멤버 상태메세지 변경 -->
+   <update id="changeMsg" parameterType="MemberDTO">
+      update f_member set mem_msg = #{mem_msg}  where mem_id = #{mem_id}
+   </update>
+   
+      <!-- 아이디넣고 해당멤버 해쉬태그 설정 -->
+   <update id="changeTag" parameterType="MemberDTO">
+      update f_member set tag_1 = #{tag_1}, tag_2 = #{tag_2}, tag_3 = #{tag_3}, tag_4 = #{tag_4}, tag_5 = #{tag_5}, tag_6 = #{tag_6}, tag_7 = #{tag_7}, tag_8 = #{tag_8}  where mem_id = #{mem_id}
+   </update>
+   
+   
+      <!-- 아이디넣고 해당 멤버의 뱃지설정 가능성 변경 -->
+   <update id="changeBadge" parameterType="MemberDTO">
+      update f_member set badge_king = #{badge_king}, badge_write = #{badge_write}, badge_1004 = #{badge_1004}, badge_good = #{badge_good}, badge_rich = #{badge_rich} where mem_id = #{mem_id}
+   </update>
+   
+   
+      <!-- 아이디 넣어서 해당멤버 뱃지 설정 -->
+   <update id="changeBadgeOk" parameterType="MemberDTO">
+      update f_member set badge_king_2 = #{badge_king_2}, badge_write_2 = #{badge_write_2}, badge_1004_2 = #{badge_1004_2}, badge_good_2 = #{badge_good_2}, badge_rich_2 = #{badge_rich_2} where mem_id = #{mem_id}
+   </update>
+   
+   
+      <!--  아이디넣어서 해당 멤버 프로필 이미지 변경-->
+    <update id="imageUpdate" parameterType="MemberDTO">
+      update f_member set mem_img = #{mem_img} where mem_id = #{mem_id}
+   </update>
+   
+   <!-- 뱃지를 위한, 넘버값을 넣은 해당 멤버의 좋아요 갯수 카운트 -->
+ 	<select id="memCountLike" resultType="int">
+		select count(*) from f_game_like where mem_num = #{num}
+	</select>
+	
+	   <!-- 뱃지를위한, 넘버값을 넣은 해당 멤버의 쇼핑구매목록 갯수 카운트  -->
+	<select id="memCountShop" resultType="int">
+		select count(*) from f_order where mem_num = #{num}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 전체게시판 글목록 개수 -->
+	<select id="memCountBoard" resultType="int">
+		select count(*) from f_board where mem_num = #{num}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 중고게시판 글목록 개수 -->
+	<select id="memCountShBoard" resultType="int">
+		select count(*) from f_sh_board where mem_num = #{num}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 자유게시판 글목록 개수 -->
+	<select id="memCountFreeBoard" resultType="int">
+		select count(*) from f_board where board_anony_check =0 and mem_num = #{num}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 익명게시판 글목록 개수 -->
+		<select id="memCountSecretBoard" resultType="int">
+		select count(*) from f_board where board_anony_check =1 and mem_num = #{num}
+	</select>
+	
+	<!-- 댓글 -->
+	<!-- 내가쓴글목록을 위한, 게시판 댓글목록 개수 -->
+	<select id="memCountReply" resultType="int">
+		select count(*) from f_board_reply where mem_num=#{num}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 자유게시판 댓글목록 개수 -->
+	<select id="MemfreelistBoard" parameterType="map" resultType="boardDTO">
+		 select b.*, m.mem_nickname from (select rownum rn, A.* from 
+		 (select * from f_board where board_anony_check=0 order by board_re_group desc, board_re_step asc)A) b 
+		 left join f_member m on b.mem_num = m.mem_num where b.mem_num=#{num} and rn between #{start} and #{end}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 중고  게시판 댓글목록 개수 -->
+	<select id="MemShlistBoard" parameterType="map" resultType="boardDTO">
+		 select b.*, m.mem_nickname from (select rownum rn, A.* from 
+		 (select * from f_sh_board order by board_re_group desc, board_re_step asc)A) b 
+		 left join f_member m on b.mem_num = m.mem_num where b.mem_num=#{num} and rn between #{start} and #{end}
+	</select>
+	
+	<!-- 내가쓴글목록을 위한, 익명  게시판 댓글목록 개수 -->
+	<select id="MemSecretlistBoard" parameterType="map" resultType="boardDTO">
+		 select b.*, m.mem_nickname from (select rownum rn, A.* from 
+		 (select * from f_board where board_anony_check=1 order by board_re_group desc, board_re_step asc)A) b 
+		 left join f_member m on b.mem_num = m.mem_num where b.mem_num=#{num} and rn between #{start} and #{end}
+	</select>
+	
+	
+	<!-- 자유게시판 댓글 리스트 -->  
+	<select id="freeReply" parameterType="map" resultType="boardDTO">
+	select * from (select * from f_board_reply where mem_num = #{num})A inner join (select * from f_board inner join f_member on f_board.mem_num = f_member.mem_num) b on b.board_num = A.board_num where b.board_anony_check = 0
+	</select>
+	
+	<!-- 익명게시판 댓글 리스트 -->  
+	<select id="secretReply" parameterType="map" resultType="boardDTO">
+	select * from (select * from f_board_reply where mem_num = #{num})A inner join f_board b on b.board_num = A.board_num where b.board_anony_check = 1
+	</select>
+	
+	<!-- 중고 게시판 댓글 리스트 -->  
+	<select id="shReply" parameterType="map" resultType="boardDTO">
+	select * from (select * from f_sh_board_reply where mem_num = #{num})A inner join f_sh_board b on b.board_num = A.board_num
+	</select>
+	
+		
+	<!-- 좋아요  -->
+	<select id="memLikeCount" parameterType="int" resultType="int">
+ 		select count(*) from f_game_like where game_num = #{game_num}
+ 	</select>
+ 	
+ 	 <!-- 멤버 별 좋아요 누른 보드게임 목록 -->
+	<select id="myPageGameLikeList" parameterType="int" resultType="GameDTO">
+		select * from f_game inner join f_game_like on f_game.game_num = f_game_like.game_num where mem_num = #{mem_num}
+	</select>
+	
+		 <!-- 비즈니스 쿠폰 목록 -->
+	<select id="myPageCouponList" parameterType="int" resultType="BusinessCouponUserDTO">
+		select p.*, b.bp_store_name from (select * from f_business_coupon_user where mem_num = #{mem_num}) p inner join f_business_profile b on p.bp_num = b.bp_num
+	</select>
+	
+	<!-- 삭제할 쿠폰 넘버 찾기!! -->
+	 <delete id ="delCoupon" parameterType="int">
+ 	delete from f_business_coupon_user where bc_num = #{num}
+ </delete>
+ 
+ 	<!-- 자동삭제 기한에 따라 -->
+ 	<delete id="expireBcouponUser" parameterType="int">
+	 delete from f_business_coupon_user where bc_duedate <![CDATA[<]]> sysdate
+	</delete>
+
+
+</mapper>
+

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.ezen.FSB.mapper.businessProfileMapper">
+	<!-- 비즈니스 프로필 디티오 뽑아오기 -->
+	<select id="BPlist" resultType="BusinessProfileDTO">
+		select * from f_business_profile where mem_num = #{mem_num}
+	</select>
+	<!-- 비즈니스 프로필 디티오 뽑아오기2 -->
+	<select id="getBP" resultType="BusinessProfileDTO">
+		select * from f_business_profile where bp_num = #{bp_num}
+	</select>
+	<!-- 해당 매장 발행 쿠폰 끌어오기 -->
+	<select id="getBC_bp" resultType="BusinessCouponDTO">
+		select * from f_business_coupon where bp_num = #{bp_num}
+	</select>
+	<!-- 해당 매장 발행 쿠폰 수 가져오기 (3장제한) -->
+	<select id="getCountCoupon" resultType="int">
+		select count(#{bp_num}) from f_business_coupon
+	</select>
+	<!-- 비즈니스 프로필 업데이트 하기 -->
+	<update id="updateBP" parameterType="BusinessProfileDTO">
+		update f_business_profile set bp_info=#{bp_info}, bp_location=#{bp_location}, bp_d_location=#{bp_d_location}, bp_store_name=#{bp_store_name},bp_tel= #{bp_tel} where bp_num=#{bp_num}
+	</update>
+	<!-- 비즈니스 쿠폰 발행 - 만료일 있음 -->
+	<insert id="insertBcoupon1" parameterType="BusinessCouponDTO">
+		insert into f_business_coupon values(#{bp_num},#{mem_num},f_business_coupon_seq.nextval, #{bc_qty},#{bc_title},#{bc_content}, sysdate, #{bc_duedate})
+	</insert>
+	<!-- 만료일 없음 -->
+	<insert id="insertBcoupon2" parameterType="BusinessCouponDTO">
+		insert into f_business_coupon values(#{bp_num},#{mem_num},f_business_coupon_seq.nextval, #{bc_qty},#{bc_title},#{bc_content}, sysdate, NULL)
+	</insert>
+	<!--비즈니스 쿠폰 삭제 -->
+	<delete id="deleteBcoupon" parameterType="int">
+		delete from f_business_coupon where bc_num = #{bc_num}
+	</delete>
+	<!-- 발급된 쿠폰 리스트 -->
+	<select id="bcouponList"  parameterType ="map" resultType="BusinessCouponUserDTO">
+	 select b.*, m.mem_hp3, m.mem_nickname from 
+	 (select rownum rn, A.* from (select * from f_business_coupon_user where bp_num=#{bp_num} order by bc_duedate asc)A) b 
+	 left join f_member m on b.mem_num = m.mem_num 
+	 where rn between #{start} and #{end}
+	</select>
+	<!-- 쿠폰 목록 카운트 -->
+	<select id="getCountBC" resultType="int">
+	select count(*) from f_business_coupon_user where bp_num = #{bp_num}
+	</select>
+	<!-- 멤버 정보 끌어오기 -->
+	<select id="getMember_bc" parameterType="map" resultType="MemberDTO">
+	select m.*,b.bc_using from f_member m left join f_business_coupon_user b on m.mem_num = b.mem_num where m.mem_num = #{mem_num} and bc_num = #{bc_num}
+	</select>
+	<!-- 사장님이 쿠폰 사용처리하기 -->
+	<update id="useBcoupon" parameterType ="map">
+		update f_business_coupon_user set bc_using = 1 where bc_num =#{bc_num} and mem_num=#{mem_num}
+	</update>
+	<!-- 사용된 쿠폰 취소하기 -->
+	<update id="cancelBcoupon" parameterType ="map">
+		update f_business_coupon_user set bc_using = 0 where bc_num =#{bc_num} and mem_num=#{mem_num}
+	</update>
+	
+	<!-- 사용자 쿠폰 -->
+	<!-- 사용자 쿠폰 리스트 -->
+	<select id="getBC_m" parameterType ="map" resultType="BusinessCouponUserDTO">
+		select * from f_business_coupon_user where mem_num =#{mem_num} and bp_num = #{bp_num}
+	</select>
+	<!-- 받을 쿠폰 정보 끌어오기 -->
+	<select id="getBC_bc" resultType="BusinessCouponDTO">
+	 	select * from f_business_coupon where bc_num = #{bc_num}
+	</select>
+	<!-- 사용자 쿠폰 받기 -->
+	<insert id="getBCoupon" parameterType="BusinessCouponUserDTO">
+		insert into f_business_coupon_user values(#{bp_num},#{mem_num},#{bc_num},f_business_coupon_user_seq.nextval,#{bc_title},#{bc_content},#{bc_duedate,jdbcType=VARCHAR},NULL)
+	</insert>
+	<!-- 쿠폰 받은 사용자 유무 체크리스트 -->
+	<select id="listBCUser" parameterType="int" resultType="ShopUserCouponDTO">
+		select mem_num from f_business_coupon_user where bc_num = #{bc_num}
+	</select>
+	<!-- 사용자 쿠폰 받기 후 갯수 차감 -->
+	<update id="minusQty" parameterType="int" >
+		update f_business_coupon set bc_qty = bc_qty-1 where bc_num =#{bc_num}
+	</update>
+	<!-- 만료날짜 쿠폰 삭제하기(사장님)-->
+	<delete id="expireBcoupon" parameterType="int">
+	 delete from f_business_coupon where bc_duedate <![CDATA[<]]> sysdate
+	</delete>
+	<!-- 만료날짜 쿠폰 삭제하기(사용자)-->
+	<!-- <delete id="expireBcoupon_user" parameterType="int">
+	 delete from f_business_coupon_user where bc_duedate <![CDATA[<]]> sysdate
+	</delete> -->
+	
+	<!-- 매장 리뷰 -->
+	<!-- 매장 리뷰 개수 카운트 -->
+	<select id="b_reviewCount" resultType="int">
+	select count(*) from f_bp_review where bp_num = #{bp_num}
+	</select>
+	<!-- 리뷰 리스트 -->
+	<select id="BPReviewList" parameterType="map" resultType="BusinessReviewDTO">
+	 select b.*, m.mem_nickname from (select rownum rn, A.* from (select * from f_bp_review where bp_num = #{bp_num} order by bpr_regdate desc)A) b left join f_member m on b.mem_num = m.mem_num where rn between #{start} and #{end}
+	</select>
+	<!-- 별점 평균 trunc(소수점빼주는),avg(평균내주는)-->
+	<select id="b_reviewAvg" parameterType="int" resultType="int">
+		select trunc(avg(bpr_starrating),1) as avg from f_bp_review where bp_num =#{bp_num}
+	</select>
+	<!-- 리뷰 작성 -->
+	<insert id="insertBPReview" parameterType="BusinessCouponDTO">
+		insert into f_bp_review values(f_bp_review_seq.nextval,#{bp_num},#{mem_num}, #{bpr_starrating},#{bpr_img1, jdbcType=VARCHAR}, #{bpr_img2, jdbcType=VARCHAR}, #{bpr_img3, jdbcType=VARCHAR}, #{bpr_img4, jdbcType=VARCHAR}, #{bpr_title}, #{bpr_content}, sysdate,0)
+	</insert>
+	<!-- 리뷰 작성 후 매장 별점 업데이트 -->
+	<update id="setStarrating" parameterType="map" >
+		update f_business_profile set bp_starrating = #{bp_starrating} where bp_num =#{bp_num}
+	</update>
+	<!-- 리뷰 상세보기 -->
+	<select id="getBreview" resultType="BusinessReviewDTO">
+		select b.*, m.mem_nickname from(select * from f_bp_review where bpr_num =#{bpr_num}) b left join f_member m on b.mem_num = m.mem_num
+	</select>
+	 <!-- 리뷰 삭제(사용자) --> 
+	 <delete id="deleteBreview" parameterType="map" >
+		 delete from f_bp_review where bpr_num =#{bpr_num}
+	</delete>
+	<!-- 리뷰 수정 (사용자) -->
+	<update id="updateBreview" parameterType="map">
+		 update f_bp_review set bpr_starrating = #{bpr_starrating} , bpr_img1=#{bpr_img1, jdbcType=VARCHAR}, bpr_img2=#{bpr_img2, jdbcType=VARCHAR}, bpr_img3=#{bpr_img3, jdbcType=VARCHAR}, bpr_img4=#{bpr_img4, jdbcType=VARCHAR}, bpr_title=#{bpr_title}, bpr_content=#{bpr_content} where bpr_num = #{bpr_num}
+	</update>
+	<!-- 리뷰 블락 (사장님) -->
+	<update id="blockReview" parameterType="map">
+		update f_bp_review set bpr_hide = 1 where bp_num =#{bp_num} and bpr_num=#{bpr_num}
+	</update>
+	<!-- 리뷰 블락 해제 (사장님) -->
+	<update id="unblockReview" parameterType="map">
+		update f_bp_review set bpr_hide = 0 where bp_num =#{bp_num} and bpr_num=#{bpr_num}
+	</update>
+</mapper>

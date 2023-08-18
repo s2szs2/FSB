@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ezen.FSB.mapper.shopMapper">
+<!-- 전체 상품 목록 -->
+	<select id="listProd" resultType="ShopProductDTO">
+		  select p.*, g.game_name, g.game_img from f_product p left join f_game g on p.game_num = g.game_num
+	</select>
+	<!-- 상품 찾기(이름순/판매순/인기순/최신순) -->
+ 	<select id="sortProd1" parameterType="String" resultType="ShopProductDTO">
+ 		select p.*, g.game_name, g.game_img from f_product p left join f_game g on p.game_num = g.game_num order by g.game_name asc
+ 	</select>
+ 	<select id="sortProd2" parameterType="String" resultType="ShopProductDTO">
+ 		select p.*, g.game_name, g.game_img from f_product p left join f_game g on p.game_num = g.game_num order by p.prod_regdate asc
+ 	</select>
+ 	<!-- 메인페이지 상품 검색 -->
+ 	<select id="findProd" parameterType="map" resultType="ShopProductDTO">
+ 		select p.*, g.game_name, g.game_img from f_product p inner join f_game g on p.game_num = g.game_num where g.game_name like '%'||#{searchString}||'%' or p.prod_company like '%'||#{searchString}||'%'
+ 	</select>
+	
+ 	<!-- 상품 상세페이지 -->
+	<select id="getProd" parameterType="int" resultType="ShopProductDTO">
+		select p.*, g.game_name, g.game_img, g.game_content from f_product p left join f_game g on p.game_num = g.game_num where p.prod_num = #{prod_num}
+	</select>
+	<!-- 상품 찜 등록 -->
+	<insert id="shopInsertLike" parameterType="ShopLikeDTO">
+		insert into f_shop_like values(f_shop_like_seq.nextval, #{prod_num}, #{mem_num})	
+	</insert>
+	<!-- 상품 찜 삭제 -->
+	<delete id="shopDeleteLike" parameterType="map">
+		delete from f_shop_like where mem_num = #{mem_num} and prod_num = #{prod_num}
+	</delete>
+	<!-- 상품 찜 개수 -->
+	<select id="shopProdLikeCount" parameterType="int" resultType="int">
+		select count(*) from f_shop_like where prod_num = #{prod_num}
+	</select>
+	<!-- 상품 찜한 회원 -->
+	<select id="shopGetProdLike" parameterType="map" resultType="ShopLikeDTO">
+		select * from f_shop_like where mem_num = #{mem_num} and prod_num = #{prod_num}
+	</select>
+	<!-- 찜한 상품 목록 -->
+	<select id="shopListLike" parameterType="int" resultType="ShopLikeDTO">
+		select l.*, p.*, g.game_name, g.game_img from f_shop_like l left join f_product p on l.prod_num = p.prod_num left join f_game g on p.game_num = g.game_num inner join f_member m on l.mem_num = m.mem_num where l.mem_num = #{mem_num} order by l.sl_num desc
+	</select>
+	<!-- 찜한 상품 개수 -->
+  	<select id="shopLikeCount" parameterType="int" resultType="int">
+ 		select count(*) from f_shop_like where mem_num = #{mem_num}
+ 	</select>	
+	<!-- 상품리뷰페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+	<insert id="shopinsertReview" parameterType="ShopReviewDTO">														<!-- null 들어가도 오류 나지않음!! -->
+		insert into f_shop_review values(f_shop_review_seq.nextval, #{prod_num}, #{mem_num}, #{sr_starrating}, #{sr_img1, jdbcType=VARCHAR}, #{sr_img2, jdbcType=VARCHAR}, #{sr_img3, jdbcType=VARCHAR}, #{sr_img4, jdbcType=VARCHAR}, #{sr_title}, #{sr_content}, sysdate)
+	</insert>
+	<select id="shoplistReview" resultType="ShopReviewDTO">
+		select r.*, p.prod_num from f_shop_review r left join f_product p on r.prod_num = p.prod_num
+	</select>
+	<!-- 상품상세 별점 평균 trunc(소수점빼주는),avg(평균내주는)-->
+	<select id="shopReviewAvg" parameterType="int" resultType="int">
+		select trunc(avg(sr_starrating)) as avg from f_shop_review inner join f_product on f_shop_review.prod_num = f_product.prod_num where f_product.prod_num = #{prod_num}
+	</select>
+	<!-- 상품상세 리뷰 개수 및 페이지번호 -->
+  	<select id="shopviewReviewCount" parameterType="int" resultType="int">
+ 		select count(*) from f_shop_review where prod_num = #{prod_num}
+ 	</select>	
+	<!-- 상품상세에서 리뷰 꺼내기 : 페이징처리 할 rn/회원닉네임을 가져오기위해 m inner join해줌/sr_num 내림차순 -->
+	<select id="shopgetViewReview" parameterType="map" resultType="ShopReviewDTO">																											<!-- 최신글이 1페이지 맨위에 오도록 내림차순 54321  -->
+		select * from (select rownum rn, A.* from 
+			(select r.*, m.mem_nickname from f_shop_review r 
+				inner join f_product p on r.prod_num = p.prod_num 
+				inner join f_member m on r.mem_num = m.mem_num
+			where r.prod_num = #{prod_num} order by sr_num desc)A)
+		where rn between #{start} and #{end}
+	</select>	
+	<!-- 수정폼에서 리뷰 꺼내기 -->
+	<select id="shopgetReview" parameterType="int" resultType="ShopReviewDTO">
+		select R.*, P.prod_num, p.prod_company, G.game_name from f_shop_review R left join f_product P on R.prod_num = P.prod_num left join f_game G on P.game_num = G.game_num where R.sr_num = #{sr_num}
+	</select>
+	<!-- 메인에서 리뷰랑 상품 join한거 꺼내기 -->
+	<select id="shopGetMainReview" parameterType="int" resultType="ShopReviewDTO">
+		select R.*, P.prod_num from f_shop_review R left join f_product P on R.prod_num = P.prod_num where R.prod_num = #{prod_num}
+	</select>
+	<delete id="shopdeleteReview" parameterType="int">
+		delete from f_shop_review where sr_num = #{sr_num}
+	</delete>
+	<update id="shopupdateReview" parameterType="ShopReviewDTO">
+		update f_shop_review set sr_starrating = #{sr_starrating}, sr_img1 = #{sr_img1}, sr_title = #{sr_title}, sr_content = #{sr_content} where sr_num = #{sr_num}
+	</update>
+	
+	<!-- 상품문의페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+	<insert id="shopinsertQnA" parameterType="ShopQnADTO">														<!-- null 들어가도 오류 나지않음!! -->
+		insert into f_shop_qna values(f_shop_qna_seq.nextval, #{prod_num}, #{mem_num}, #{sq_type}, #{sq_img1, jdbcType=VARCHAR}, #{sq_img2, jdbcType=VARCHAR}, #{sq_img3, jdbcType=VARCHAR}, #{sq_img4, jdbcType=VARCHAR}, #{sq_title}, #{sq_content}, #{sq_passwd}, sysdate, 0, #{sq_secret}, #{sq_reply, jdbcType=VARCHAR})
+	</insert>
+	<delete id="shopdeleteQnA" parameterType="int">
+		delete from f_shop_qna where sq_num = #{sq_num}
+	</delete>
+	<!-- 상품 문의 전체목록(관리자 필요할듯) -->
+	<select id="shoplistQnA" resultType="ShopQnADTO">
+		select q.*, p.prod_num from f_shop_qna q left join f_product p on q.prod_num = p.prod_num
+	</select>
+	<!-- 상품상세 문의페이지번호 -->
+  	<select id="shopviewQnACount" parameterType="int" resultType="int">
+ 		select count(*) from f_shop_qna where prod_num = #{prod_num}
+ 	</select>	
+	<!-- 상품상세에서 문의글 꺼내기  : 페이징처리 할 rn/회원닉네임을 가져오기위해 m inner join해줌/sr_num 내림차순 -->
+	<select id="shopgetViewQnA" parameterType="map" resultType="ShopQnADTO">																											<!-- 최신글이 1페이지 맨위에 오도록 내림차순 54321  -->
+		select * from (select rownum rn, A.* from 
+			(select q.*, m.mem_nickname from f_shop_qna q 
+				inner join f_product p on q.prod_num = p.prod_num 
+				inner join f_member m on q.mem_num = m.mem_num
+			where q.prod_num = #{prod_num} order by sq_num desc)A)
+		where rn between #{start} and #{end}
+	</select>
+	
+	<!-- 장바구니페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+	<!-- 상품 장바구니 등록 -->
+	<insert id="shopInsertCart" parameterType="ShopCartDTO">
+		insert into f_cart values(f_cart_seq.nextval, #{mem_num}, #{game_num}, #{prod_num}, #{cart_qty})
+	</insert>
+	<update id="shopUpdateCart" parameterType="ShopCartDTO">
+		update f_cart set cart_qty = #{cart_qty} where cart_num = #{cart_num}
+	</update>
+	<delete id="shopDeleteCart" parameterType="int">
+		delete from f_cart where cart_num = #{cart_num}
+	</delete>
+	<!-- 상품 장바구니 목록 -->
+	<select id="shopListCart" parameterType="int" resultType="ShopCartDTO">
+		select c.*, p.*, g.game_name, g.game_img from f_cart c left join f_product p on c.prod_num = p.prod_num left join f_game g on p.game_num = g.game_num inner join f_member m on c.mem_num = m.mem_num where c.mem_num = #{mem_num} order by c.cart_num desc
+	</select>
+	<!-- 상품 장바구니 개수 -->
+  	<select id="shopCartCount" parameterType="int" resultType="int">
+ 		select count(*) from f_cart where mem_num = #{mem_num}
+ 	</select>
+ 	
+ 	<!-- 상품주문페이지 ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ -->
+ 	<!-- 주문페이지 선택한 장바구니 상품 꺼내기  -->
+	<select id="shopGetCartOrder" parameterType="map" resultType="ShopCartDTO">
+		select c.*, p.*, g.* from f_cart c left join f_product p on c.prod_num = p.prod_num left join f_game g on p.game_num = g.game_num inner join f_member m on c.mem_num = m.mem_num where c.mem_num = #{mem_num} and c.cart_num = #{cart_num} order by c.cart_num asc
+	</select>	
+	<!-- 결제완료 시, 주문페이지에서 포인트 사용/적립 시 pointhistory 등록 -->
+	<insert id="shopPointOrder" parameterType="ShopPointHistoryDTO">	
+		insert into f_point_history values(f_point_history_seq.nextval, #{mem_num}, sysdate, #{point_type}, #{point_content}, #{point_amount}, #{point_total})
+	</insert>	
+	<!-- 최근 데이터 1개 꺼내기! https://m.blog.naver.com/traeumen927/220971719134 -->
+	<select id="shopUserPointTotal" parameterType="int" resultType="int">
+		select point_total from (select * from f_point_history where mem_num = #{mem_num} order by point_num desc) where rownum = 1
+	</select>
+	<!-- 결제완료 시, 주문페이지에서 적용된 쿠폰 삭제 -->
+	<delete id="shopDeleteUsc" parameterType="int">
+		delete from f_user_scoupon where usc_num = #{usc_num}
+	</delete>
+	<!-- 결제완료 시, 상품 수량 변경 -->
+	<update id="shopUpdateProd" parameterType="ShopProductDTO">
+		update f_product set prod_qty = #{prod_qty} where prod_num = #{prod_num}
+	</update>
+	
+ 	<!-- 결제완료 or 주문페이지 배송지 관리 - 배송지 등록 -->
+ 	<insert id="shopInsertDel" parameterType="ShopDeliveryDTO">
+ 		insert into f_delivery values(f_delivery_seq.nextval, #{mem_num}, #{del_name}, #{del_address1}, #{del_address2}, #{del_address3}, #{del_title},#{del_hp})
+ 	</insert>
+ 	<!-- 주문페이지 배송지 목록 -->
+ 	<select id="shopListDel" parameterType="int" resultType="ShopDeliveryDTO">
+ 		select * from f_delivery where mem_num = #{mem_num}
+ 	</select>
+	<!-- 주문페이지 배송지 개수 --> 	
+ 	<select id="shopDelCount" parameterType="int" resultType="int">
+ 		select count(*) from f_delivery where mem_num = #{mem_num}
+ 	</select>
+ 	<!-- 주문페이지 배송지관리 - 삭제 -->
+ 	<delete id="shopDeleteDel" parameterType="int">
+ 		delete from f_delivery where del_num = #{del_num}
+ 	</delete>
+ 	<!-- 주문페이지 배송지관리 - 수정 -->
+ 	<update id="shopUpdateDel" parameterType="ShopDeliveryDTO">
+ 		update f_delivery set del_name = #{del_name}, del_address1 = #{del_address1}, del_address2 = #{del_address2}, del_address3 = #{del_address3}, del_title = #{del_title}, del_hp = #{del_hp} where del_num = #{del_num}
+ 	</update>
+ 	<!-- 주문페이지 배송지관리 - 선택 -->
+ 	<select id="shopGetDel" parameterType="int" resultType="ShopDeliveryDTO">
+ 		select * from f_delivery where del_num = #{del_num}
+ 	</select>
+ 	
+ 	<!-- 결제완료 시, 주문페이지 주문 등록 -->
+ 	<insert id="shopInsertOrder" parameterType="ShopOrderDTO">
+ 		insert into f_order values (#{order_num}, #{mem_num}, #{order_address1}, #{order_address2}, #{order_address3}, #{order_memo, jdbcType=VARCHAR}, #{order_price}, #{order_payment}, #{order_coupon}, #{order_point}, #{order_receiptprice}, 1, sysdate, null, #{order_hp}, #{order_name})
+ 	</insert>
+ 	<!-- 결제완료 시, 주문 상세 등록 할 때 필요한 order_num -->
+ 	<select id="shopOrderNum" parameterType="int" resultType="int">
+ 		select f_order_seq.nextval from
+ 		
+ 		 dual
+ 	</select>
+ 	<!-- 결제완료 시, 주문페이지 주문 상세 등록 -->
+ 	<insert id="shopInsertOrderDetail" parameterType="ShopOrderDetailDTO">
+ 		insert into f_order_detail values(f_order_detail_seq.nextval, #{order_num}, #{prod_num}, #{detail_qty})
+ 	</insert>
+ 	<!-- 주문 취소 -->
+ 	<delete id="shopDeleteOrder" parameterType="int">
+ 		delete from f_order where order_num = #{order_num}
+ 	</delete>
+ 	<!-- 마이페이지 전체 주문 목록 페이지 -->
+ 	<select id="shopListOrder" parameterType="int" resultType="ShopOrderDTO">
+		select * from f_order where mem_num = #{mem_num}
+ 	</select>
+	<select id="shopListOrderDetail" parameterType="int" resultType="ShopOrderDetailDTO">
+		select * from f_order_detail d  left join f_product p on d.prod_num = p.prod_num left join f_game g on p.game_num = g.game_num 
+		where order_num = #{order_num} order by order_num desc	
+	</select>
+	<!-- 마이페이지 주문 상세 내역 -->
+	<select id="shopListOrderDetailView" parameterType="map" resultType="ShopOrderDTO">
+		select * from f_order O left join f_order_detail D on O.order_num = D.order_num left join f_product P on D.prod_num = P.prod_num 
+		left join f_game G on P.game_num = G.game_num where O.order_num=#{order_num} and O.mem_num=#{mem_num}
+	</select>
+	<!-- 이미 작성된 리뷰랑 문의글 빼고 조회하기 -->
+	<select id="shopListNotReview" parameterType="int" resultType="ShopReviewDTO">
+		select * from (select * from f_order o left join f_order_detail d on d.order_num = o.order_num where mem_num = #{mem_num})A
+		left join f_shop_review r on A.prod_num = r.prod_num left join f_product p on A.prod_num = p.prod_num left join f_game g on p.game_num = g.game_num where r.prod_num IS NULL
+	</select>
+	<!-- 주문페이지 배송지 개수 --> 	
+ 	<select id="shopOrderCount" parameterType="int" resultType="int">
+ 		select count(*) from f_order where mem_num = #{mem_num}
+ 	</select> 	
+ 	<!-- 환불 시 주문 상세 꺼내기 위한 -->
+ 	<select id="shopGetRefundOrder" parameterType="int" resultType="shopOrderDetailDTO">
+		select * from (select * from f_order_detail where order_num = #{order_num})A
+		left join (select p.*, g.game_name, g.game_img from f_product p left join f_game g on p.game_num = g.game_num)B on A.prod_num = B.prod_num 
+ 	</select>
+ 	<!-- 마이페이지 전체 주문 목록에서 [환불=전체 반품] 누르면 -1로 변경 -->
+ 	<update id="shopUpdateOrder" parameterType="ShopOrderDTO">
+ 		update f_order set order_progress = #{order_progress} where order_num = #{order_num}
+ 	</update>
+ 	<!-- 마이페이지 환불내역 -->
+ 	<select id="shopRefundOrder" resultType="ShopOrderDTO">
+ 		select * from f_order where order_progress = -1 order by order_num desc
+ 	</select>
+</mapper>

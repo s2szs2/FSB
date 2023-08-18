@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+ 
+<mapper namespace="com.ezen.FSB.mapper.alarmMapper">  <!-- name스페이스 - 자기이름 / 경로랑 같이 /마이바티스 의무적으로 적어야함, 네임스페이스가뭘하냐면
+													자바에는 없던 문법 /  -->
+<!-- 보드게임 알람등록 -->
+  <insert id="addBoardAlarm" parameterType="AlarmDTO">
+ 	insert into f_alarm(mem_num, alm_num, alm_cate, alm_title, alm_content, alm_read, alm_regdate) 
+ 	values(#{mem_num}, f_alarm_seq.nextval, #{alm_cate}, #{alm_title}, #{alm_content}, #{alm_read}, sysdate)
+ </insert> 
+ 
+ 	<!-- 보드게임 알람리스트 -->
+  <select id="boardAlarmList" parameterType="String" resultType="AlarmDTO">
+ 	select * from f_alarm where mem_num = #{num} 
+ </select>
+ 
+ <!-- 댓글번호로 게시글 번호 찾기 -->
+   <select id="replyBoardNum" parameterType="int" resultType="int">
+ 	select board_num from f_board_reply where br_num = #{br_num} 
+ </select>
+ 
+ <!-- 글번호로 작성자  번호 찾기 -->
+   <select id="BoardNum" parameterType="int" resultType="int">
+ 	select mem_num from f_board where board_num = #{board_num} 
+ </select>
+ 
+ <!-- 글번호로 제목 찾기 -->
+   <select id="BoardTitle" parameterType="int" resultType="String">
+ 	select board_title from f_board where board_num = #{board_num} 
+ </select>
+ 
+ <!-- 중고게시판  글번호로 작성자  번호 찾기 -->
+   <select id="shBoardNum" parameterType="int" resultType="int">
+ 	select mem_num from f_sh_board where board_num = #{board_num} 
+ </select>
+ 
+ <!-- 중고게시판 글번호로 제목 찾기 -->
+   <select id="shBoardTitle" parameterType="int" resultType="String">
+ 	select board_title from f_sh_board where board_num = #{board_num} 
+ </select>
+ 
+ 
+ <!-- 댓글번호로 작성자  번호 찾기 -->
+   <select id="BoardNumReply" parameterType="int" resultType="int">
+ 	select mem_num from f_board_reply where br_num = #{br_num} 
+ </select>
+ 
+ <!-- 댓글번호로 글 번호 찾기 -->
+   <select id="BoardTitleReply" parameterType="int" resultType="int">
+ 	select board_num from f_board_reply where br_num = #{br_num} 
+ </select>
+ 
+ <!--댓글 번호로 작성자 번호 찾기 (중고)  -->
+    <select id="shBoardNumReply" parameterType="int" resultType="int">
+ 	select mem_num from f_sh_board_reply where br_num = #{br_num} 
+ </select>
+ 
+ <!-- 댓글번호로 글 번호 찾기 (중고) -->
+   <select id="shBoardTitleReply" parameterType="int" resultType="int">
+ 	select board_num from f_sh_board where br_num = #{br_num} 
+ </select>
+ 
+ <!-- 번호로 알람 삭제 !! -->
+	 <delete id ="delAlarm" parameterType="int">
+ 	delete from f_alarm where alm_num = #{num}
+ </delete>
+ 
+ <!-- 알람 확인누르면 read 컬럼을 1로 변경 -->
+   <update id="readAlarm" parameterType="int">
+      update f_alarm set alm_read = 1 where alm_num = #{alm_num}
+   </update>
+   
+     <!-- 보드게임 알람리스트 read가 0인 (안읽은 메세지만 리스트로 만들어줘)  -->
+  <select id="boardunReadAlarmList" parameterType="int" resultType="AlarmDTO">
+ 	select * from f_alarm where mem_num = #{num} and alm_read = 0
+ </select>
+ 
+</mapper>
+

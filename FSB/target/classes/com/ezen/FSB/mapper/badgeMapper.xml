@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+ 
+<mapper namespace="com.ezen.FSB.mapper.loginMapper">  <!-- name스페이스 - 자기이름 / 경로랑 같이 /마이바티스 의무적으로 적어야함, 네임스페이스가뭘하냐면
+													자바에는 없던 문법 /  -->
+
+
+ 
+<insert id="insertBagde" parameterType="MemberDTO">
+ 	insert into f_badge(mem_num, bage_king, badge_write, badge_1004, badge_good, badge_rich, bage_king_2, badge_write_2, badge_1004_2, badge_good_2, badge_rich_2) values(f_member_seq.nextval, #{bage_king}, #{badge_write}, #{badge_1004}, #{badge_good}, #{badge_rich}, #{bage_king_2}, #{badge_write_2}, #{badge_1004_2}, #{badge_good_2}, #{badge_rich_2})
+</insert> 
+ 
+<insert id="insertKakaoBagde" parameterType="MemberDTO">
+ 	insert into f_badge(mem_num, bage_king, badge_write, badge_1004, badge_good, badge_rich, bage_king_2, badge_write_2, badge_1004_2, badge_good_2, badge_rich_2) values(f_member_seq.nextval, #{bage_king}, #{badge_write}, #{badge_1004}, #{badge_good}, #{badge_rich}, #{bage_king_2}, #{badge_write_2}, #{badge_1004_2}, #{badge_good_2}, #{badge_rich_2})
+</insert>
+
+ <!-- <select id="findMember" parameterType="String" resultType="MemberDTO">
+ 	select * from f_member where mem_id = #{id}
+ </select> 
+ 
+ <select id="findId" parameterType="String" resultType="MemberDTO">
+ 	select * from f_member where mem_name = #{name}
+ </select>
+ 
+  <select id="findNick" parameterType="String" resultType="MemberDTO">
+ 	select * from f_member where mem_nickname = #{nickname}
+ </select>
+ 
+ <select id="findNumber" parameterType="String" resultType="MemberDTO">
+ 	select * from f_member where mem_name = #{name}
+ </select>
+ 
+ <select id="idMember" parameterType="String" resultType="MemberDTO">
+ 	select * from f_member where mem_id = #{id}
+ </select> 
+ 
+ <select id="loginMember" parameterType="String" resultType="String">
+ 	select mem_passwd from f_member where mem_id = #{id}
+ </select>
+ 
+  <select id="joinMember" parameterType="String" resultType="String">
+ 	select mem_join from f_member where mem_id = #{id}
+ </select>
+ 
+ <update id="changePw" parameterType="MemberDTO">
+      update f_member set mem_passwd = #{mem_passwd} where mem_id = #{mem_id}
+   </update>
+   
+   <update id="changeNick" parameterType="MemberDTO">
+      update f_member set mem_nickname = #{mem_nickname} where mem_id = #{mem_id}
+   </update>
+   
+   <update id="changePhone" parameterType="MemberDTO">
+      update f_member set mem_hp1 = #{mem_hp1}, mem_hp2 = #{mem_hp2}, mem_hp3 = #{mem_hp3}  where mem_id = #{mem_id}
+   </update>
+   
+   <update id="changeMsg" parameterType="MemberDTO">
+      update f_member set mem_msg = #{mem_msg}  where mem_id = #{mem_id}
+   </update>
+   
+      <update id="plusCount" parameterType="MemberDTO">
+     update f_member set mem_count = mem_count+1 where mem_id = #{mem_id}
+   </update>
+   
+   <update id="agreeUpdate" parameterType="MemberDTO">
+      update f_member set mem_sel_agree = #{mem_sel_agree} where mem_id = #{mem_id}
+   </update>
+   
+    <update id="imageUpdate" parameterType="MemberDTO">
+      update f_member set mem_img = #{mem_img} where mem_id = #{mem_id}
+   </update>
+    -->
+
+
+
+</mapper>
+

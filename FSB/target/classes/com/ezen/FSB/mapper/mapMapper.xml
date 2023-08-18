@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.ezen.FSB.mapper.mapMapper">
+  		<!-- 등록된 매장 전체 리스트 -->
+  		<select id="locationList" resultType="BusinessProfileDTO">
+  			select * from f_business_profile
+  		</select>
+  		
+  		<!--매장 이름 검색 -->
+		<select id="findPlace" resultType="BusinessProfileDTO">
+ 		select * from f_business_profile where UPPER(bp_store_name) like '%'||#{searchString}||'%' or LOWER(bp_store_name) like '%'||#{searchString}||'%' 
+ 		</select>
+ 		
+ 		<!--매장 정보 가지고 오기 -->
+		<select id="getLoca"  resultType="BusinessProfileDTO">
+ 		select * from f_business_profile where bp_num = #{bp_num}
+ 		</select>
+ 		
+ 		<!--매장 개인 프로필 가지고오기 -->
+ 		<select id="getBprof" parameterType="int" resultType="ProfileDTO">
+ 		select * from f_profile where mem_num = #{mem_mem}
+ 		</select>
+  </mapper>

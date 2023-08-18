@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.ezen.FSB.mapper.feedReplyMapper">	
+	<!-- 피드의 댓글 목록 가져오기 -->
+	<select id="listFeedReply" parameterType="int" resultType="feedReplyDTO"> 
+ 		select * 
+ 		from f_feedReply 	inner join f_profile on f_feedReply.mem_num = f_profile.mem_num 
+ 							inner join f_member on f_feedReply.mem_num = f_member.mem_num 
+ 		where feed_num=#{feed_num} 
+ 		order by fr_re_group desc, fr_re_step asc 
+ 	</select>
+	
+	<!-- 피드 댓글 하나 가져오기 -->
+ 	<select id="getFeedReply" parameterType="int" resultType="feedReplyDTO">
+ 		select * 
+ 		from f_feedReply 	inner join f_profile on f_feedReply.mem_num = f_profile.mem_num 
+ 							inner join f_member on f_feedReply.mem_num = f_member.mem_num 
+ 		where fr_num = #{fr_num}
+ 	</select>
+ 	
+ 	<!-- 피드 댓글 수정 -->
+ 	<update id="updateFeedReply" parameterType="Map">
+ 		update f_feedReply set fr_content=#{fr_content} where fr_num=#{fr_num}
+ 	</update>
+ 	
+ 	<!-- 피드 댓글 삭제 -->
+ 	<delete id="deleteFeedReply" parameterType="int">
+ 		delete from f_feedReply where fr_num = #{fr_num}
+ 	</delete>
+ 	
+ 	<!-- 댓글 입력  -->
+	<insert id="insertFeedReply" parameterType="feedReplyDTO">
+ 		insert into f_feedReply values(f_feedReply_seq.nextval, #{fr_re_group}, #{fr_re_step}, #{fr_re_level}, #{feed_num}, #{mem_num}, #{fr_content}, 0, sysdate, #{fr_open})
+	</insert>
+	
+ 	<!-- 댓글 수 -->
+	<select id="getCountReply_feed" resultType="int">
+		select count(*) from f_feedReply where feed_num=#{feed_num}
+	</select>
+	
+ 	<!-- 댓글 re_group 최댓값 -->
+	<select id ="maxRe_group_reply_feed" resultType="int">
+ 		select max(fr_re_group) from f_feedReply
+ 	</select>
+ 	
+	<!-- 댓글 re_step 최댓값 -->
+	<select id ="maxRe_step_reply_feed" parameterType="int" resultType="int">
+ 		select max(fr_re_step) from f_feedReply where fr_re_group = #{fr_re_group}
+ 	</select>
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.ezen.FSB.mapper.feedMapper">
+	<!-- 메인 타임라인 불러오기 -->
+	<select id="getTimeline" parameterType="int" resultType="feedDTO"> 
+		select * 
+ 		from f_feed inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 		
+ 		where 	f_feed.mem_num in (select friend_num from f_friend where mem_num=#{value} and friend_accept='follow') 
+ 				or f_feed.mem_num = #{value} 
+ 		order by f_feed.feed_regdate desc
+ 	</select>
+ 	<!-- 공개 프로필 개인 타임라인 불러오기 -->
+ 	<select id="getOnesTimeline_open" parameterType="int" resultType="feedDTO"> 
+		select * 
+ 		from f_feed 
+ 					inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 
+ 		where f_feed.mem_num = #{value} and f_feed.feed_open = 'open' 
+ 		order by f_feed.feed_regdate desc
+ 	</select>
+ 	<!-- 비밀 프로필 개인 타임라인 불러오기 -->
+ 	<select id="getOnesTimeline_secret" parameterType="int" resultType="feedDTO"> 
+		select * 
+ 		from f_feed 
+ 					inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 
+ 		where f_feed.mem_num = #{value} 
+ 		order by f_feed.feed_regdate desc
+ 	</select>
+ 	
+ 	<!-- 테마별 피드 목록 가져오기 -->
+ 	<select id="getThemeFeedList" parameterType="Map" resultType="feedDTO"> 
+ 		select * 
+ 		from f_feed inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 		
+ 		where 	f_feed.feed_num in (select feed_num from f_feed_theme where theme_num=#{theme_num}) 
+				and (f_feed.feed_open = 'open' or f_feed.mem_num = #{mem_num} 
+				or f_feed.mem_num in (select friend_num from f_friend where mem_num=#{mem_num} and friend_accept='follow')) 
+ 		order by f_feed.feed_regdate desc
+ 	</select>
+ 	
+ 	<!-- 게임별 피드 목록 가져오기 -->
+ 	<select id="getGameFeedList" parameterType="int" resultType="feedDTO"> 
+		select * 
+ 		from f_feed 
+ 					inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 
+ 		where f_feed.game_num = #{value} and f_feed.feed_open = 'open' 
+ 		order by f_feed.feed_regdate desc
+ 	</select>
+ 	
+ 	<!-- 피드 하나 가져오기 -->
+ 	<select id="getFeed" parameterType="int" resultType="feedDTO">
+ 		select * 
+ 		from f_feed 
+ 					inner join f_profile on f_feed.mem_num = f_profile.mem_num 
+ 					inner join f_member on f_feed.mem_num = f_member.mem_num 
+ 					left join f_game on f_feed.game_num = f_game.game_num 
+ 		where feed_num = #{feed_num}
+ 	</select>
+ 	
+ 	<!-- 피드 등록 (비즈니스 프로필 유) -->
+ 	<insert id="insertFeed" parameterType="feedDTO">
+ 		insert into f_feed values(	#{feed_num}, #{mem_num}, #{game_num}, #{feed_content}, #{feed_img1, jdbcType=VARCHAR}, 
+ 									#{feed_img2, jdbcType=VARCHAR}, #{feed_img3, jdbcType=VARCHAR}, #{feed_img4, jdbcType=VARCHAR}, 
+ 									0, 0, 0, sysdate, #{feed_open})
+ 	</insert>
+ 	<!-- 피드 등록 (비즈니스 프로필 무) -->
+ 	<insert id="insertFeed_noGame" parameterType="feedDTO">
+ 		insert into f_feed (feed_num, mem_num, feed_content, feed_img1, feed_img2, feed_img3, feed_img4, 
+ 							feed_replyCount, feed_likeCount, feed_report, feed_regdate, feed_open) 
+ 		values(#{feed_num}, #{mem_num}, #{feed_content}, #{feed_img1, jdbcType=VARCHAR}, #{feed_img2, jdbcType=VARCHAR}, 
+ 				#{feed_img3, jdbcType=VARCHAR}, #{feed_img4, jdbcType=VARCHAR}, 0, 0, 0, sysdate, #{feed_open})
+ 	</insert>
+ 	<!-- 피드 수정 (비즈니스 프로필 유)-->
+ 	<update id="updateFeed" parameterType="feedDTO">
+ 		update f_feed set game_num=#{game_num}, feed_content=#{feed_content}, feed_img1=#{feed_img1, jdbcType=VARCHAR}, 
+ 						feed_img2=#{feed_img2, jdbcType=VARCHAR}, feed_img3=#{feed_img3, jdbcType=VARCHAR}, 
+ 						feed_img4=#{feed_img4, jdbcType=VARCHAR}, feed_open=#{feed_open} where feed_num=#{feed_num}
+ 	</update>
+ 	<!-- 피드 수정 (비즈니스 프로필 무)-->
+ 	<update id="updateFeed_noGame" parameterType="feedDTO">
+ 		update f_feed set game_num=null, feed_content=#{feed_content}, feed_img1=#{feed_img1, jdbcType=VARCHAR}, 
+ 						feed_img2=#{feed_img2, jdbcType=VARCHAR}, feed_img3=#{feed_img3, jdbcType=VARCHAR}, 
+ 						feed_img4=#{feed_img4, jdbcType=VARCHAR}, feed_open=#{feed_open} where feed_num=#{feed_num}
+ 	</update>
+ 	<!-- 피드 하나 삭제 -->
+ 	<delete id="deleteFeed" parameterType="int">
+ 		delete from f_feed where feed_num = #{feed_num}
+ 	</delete>
+
+	<!-- 피드 댓글 갯수 변경 -->
+ 	<update id="plusReplyFeed" parameterType="int">
+ 		update f_feed set feed_replyCount=feed_replyCount+1 where feed_num=#{feed_num}
+ 	</update>
+ 	<update id="minusReplyFeed" parameterType="int">
+ 		update f_feed set feed_replyCount=feed_replyCount-1 where feed_num=#{feed_num}
+ 	</update>
+ 	
+ 	<!-- 댓글 갯수 확인 -->
+ 	<select id="feedReplyCount" parameterType="int" resultType="int">
+ 		select count(*) from f_feedReply where feed_num = #{feed_num}
+ 	</select>
+ 	
+ 	<!-- 좋아요 dto 등록 -->
+ 	<insert id="feedLike" parameterType="feed_likeDTO">
+ 		insert into f_feed_like values(f_feed_like_seq.nextval, #{feed_num}, #{mem_num})
+ 	</insert>
+ 	<!-- 좋아요 dto 삭제 -->
+ 	<delete id="feedLikeDelete" parameterType="int">
+ 		delete from f_feed_like where feed_num = #{feed_num} and mem_num = #{mem_num}
+ 	</delete>
+ 	
+ 	<!-- 피드 좋아요 갯수 변경 -->
+ 	<update id="addLikeFeed" parameterType="int">
+ 		update f_feed set feed_likeCount=feed_likeCount+1 where feed_num=#{feed_num}
+ 	</update>
+ 	<update id="minusLikeFeed" parameterType="int">
+ 		update f_feed set feed_likeCount=feed_likeCount-1 where feed_num=#{feed_num}
+ 	</update>
+ 	<!-- 좋아요 누른 피드인지 확인 -->
+ 	<select id="memLikeCheck_feed" parameterType="map" resultType="int">
+ 		select Count(*) from f_feed_like where feed_num = #{feed_num} and mem_num = #{mem_num}
+ 	</select>
+ 	<!-- 좋아요 갯수 확인 -->
+ 	<select id="feedLikeCount" parameterType="int" resultType="int">
+ 		select count(*) from f_feed_like where feed_num = #{feed_num}
+ 	</select>
+ 	
+ 	<!-- 다음 feed_num 값 받아오기 -->
+ 	<select id="getNextFeedNum" resultType="int"> 
+ 		select f_feed_seq.nextval from dual
+ 	</select>
+ 	
+ 	<!-- 피드의 태그 전부 가져오기 -->
+ 	<select id="getFeedTheme" parameterType="int" resultType="themeDTO"> 
+ 		select T.theme_num, T.theme_name from f_feed_theme FT inner join f_theme T on FT.theme_num = T.theme_num where FT.feed_num = #{feed_num}
+ 	</select>
+ 	<!-- 피드의 태그 하나 등록 -->
+ 	<insert id="insertFeedTheme" parameterType="feed_themeDTO">
+ 		insert into f_feed_theme values(#{feed_num}, #{theme_num})
+ 	</insert>
+ 	<!-- 피드의 태그 전부 삭제 -->
+ 	<delete id="deleteFeedTheme" parameterType="int">
+ 		delete from f_feed_theme where feed_num = #{feed_num}
+ 	</delete>
+ 	
+ 	<!-- 피드 신고 -->
+ 	<update id="reportFeed" parameterType="int">
+ 		update f_feed set feed_report = feed_report+1 where feed_num = #{feed_num}
+ 	</update>
+ 	<!-- 피드 댓글 신고 -->
+ 	<update id="reportFeedReply" parameterType="int">
+ 		update f_feedReply set fr_report = fr_report+1 where fr_num = #{fr_num}
+ 	</update>
+</mapper>

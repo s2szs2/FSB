@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+ 
+<mapper namespace="com.ezen.FSB.mapper.memberMapper">  
+
+<!-- 아이디  넣어서 멤버 목록에서 해당 dto의 동의서목록 확인 --> 
+  <update id="agreeUpdate" parameterType="MemberDTO">
+      update f_member set mem_sel_agree = #{mem_sel_agree} where mem_id = #{mem_id}
+   </update>
+   
+   <!-- 일반 회원가입시 다 넣어~ --> 
+    <insert id="insertMember2" parameterType="MemberDTO">
+ 	insert into f_member(mem_num, mem_name, mem_id, mem_passwd, mem_mode, mem_join, mem_regdate, mem_nickname, mem_count, badge_king, badge_write, badge_1004, badge_good, badge_rich, badge_king_2, badge_write_2, badge_1004_2, badge_good_2, badge_rich_2, tag_1, tag_2, tag_3, tag_4, tag_5, tag_6, tag_7, tag_8) 
+ 	values(#{mem_num}, #{mem_name}, #{mem_id}, #{mem_passwd}, #{mem_mode}, #{mem_join}, sysdate, #{mem_nickname}, #{mem_count} , #{badge_king} , #{badge_write}, #{badge_1004}, #{badge_good}, #{badge_rich}, #{badge_king_2}, #{badge_write_2}, #{badge_1004_2}, #{badge_good_2}, #{badge_rich_2}, #{tag_1}, #{tag_2}, #{tag_3}, #{tag_4}, #{tag_5}, #{tag_6}, #{tag_7}, #{tag_8})
+ </insert> 
+ 
+    <!-- 카카오 회원가입시 다 넣어~ --> 
+<insert id="insertKakaoMember" parameterType="MemberDTO">
+ 	insert into f_member(mem_num, mem_name, mem_id, mem_mode, mem_join, mem_regdate, mem_count, badge_king, badge_write, badge_1004, badge_good, badge_rich, badge_king_2, badge_write_2, badge_1004_2, badge_good_2, badge_rich_2, tag_1, tag_2, tag_3, tag_4, tag_5, tag_6, tag_7, tag_8, mem_report) 
+ 	values(#{mem_num}, #{mem_name}, #{mem_id}, #{mem_mode}, #{mem_join}, sysdate, #{mem_count}, #{badge_king} , #{badge_write}, #{badge_1004}, #{badge_good}, #{badge_rich}, #{badge_king_2}, #{badge_write_2}, #{badge_1004_2}, #{badge_good_2}, #{badge_rich_2}, #{tag_1}, #{tag_2}, #{tag_3}, #{tag_4}, #{tag_5}, #{tag_6}, #{tag_7}, #{tag_8}, #{mem_report})
+ </insert>
+ 
+ 	<!-- 카카오 회원가입 멤버 넘버 -->
+ 	<select id="kakaoMemNum" parameterType="int" resultType="int">
+		select f_member_seq.nextval from dual 	
+	</select>
+	
+	
+	<!-- 회원탈퇴시 이유 저장 -->
+  <insert id="reason" parameterType="DontgoDTO">
+ 	insert into f_dontgo(reason, nickname, regdate) 
+ 	values( #{reason}, #{nickname}, sysdate)
+ </insert> 
+ 
+    <!-- 회원 탈퇴시 id 넣어서 해당 멤버 삭제 --> 
+  <delete id ="deleteMem" parameterType="String">
+ 	delete from f_member where mem_id = #{id}
+ </delete>
+ 
+ 
+ <!-- 닉네임 // 프로필 관련 - 0719 추가 -->
+	<insert id="updateNicknameProfile" parameterType="profileDTO">
+ 		update f_profile set prof_nickname_separated = #{prof_nickname_separated} where mem_num = #{mem_num}
+	</insert>
+	
+	<!-- profileMapper 내용 -->
+	<select id="basicMemberNextNum" resultType="int"> 
+ 		select f_member_seq.nextval from dual
+ 	</select>
+ 
+</mapper>
+

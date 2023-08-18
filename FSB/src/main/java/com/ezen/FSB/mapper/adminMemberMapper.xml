@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.ezen.FSB.mapper.adminMemberMapper">
+
+	<!-- loginMapper 내용 -->
+	<select id="adminFindGetMember" parameterType="String" resultType="memberDTO">
+ 		select * from f_member where mem_id = #{id}
+ 	</select>
+	<!-- profileMapper 내용 -->
+	<select id="adminNextMemNum" resultType="int"> 
+ 		select f_member_seq.nextval from dual
+ 	</select>
+
+	<!-- 일반 회원 목록 -->
+	<select id="adminListMember" resultType="memberDTO">
+		select * from f_member where mem_mode = '일반' order by mem_num asc
+	</select>
+	
+	<!-- 회원 등록 -->
+	<insert id="adminInsertMember" parameterType="memberDTO">
+		insert into f_member (mem_num, mem_id, mem_passwd, mem_name, mem_nickname, mem_mode, mem_join, mem_regdate, mem_report, mem_hp1, mem_hp2, mem_hp3)
+		values (#{mem_num}, #{mem_id}, #{mem_passwd}, #{mem_name}, #{mem_nickname}, #{mem_mode}, 1, sysdate, 0, #{mem_hp1}, #{mem_hp2}, #{mem_hp3})
+	</insert>
+	
+	<!-- 일반 회원 상세보기 -->
+	<select id="adminGetMember" parameterType="int" resultType="memberDTO">
+		select * from f_member where mem_num = #{mem_num}
+	</select>
+	
+	<!-- 일반 회원 찾기 -->
+	<select id="adminFindMember" parameterType="map" resultType="memberDTO">
+		select * from f_member where mem_mode = '일반' and ${search} like '%'||#{searchString}||'%'
+	</select>
+	
+	<!-- 회원 삭제 -->
+	<delete id="adminDeleteMember" parameterType="int">
+		delete from f_member where mem_num = #{mem_num}
+	</delete>
+	
+	<!-- 일반 회원 수정 // 비밀번호 수정 -->
+	<update id="adminUpdateMemberPasswd" parameterType="int">
+		update f_member set mem_passwd='123456789' where mem_num=#{mem_num}
+	</update>
+	
+	<!-- 일반 회원 수정 // 닉네임 수정 -->
+	<update id="adminUpdateMemberNickname" parameterType="memberDTO">
+		update f_member set mem_nickname=#{mem_nickname} where mem_num=#{mem_num}
+	</update>
+	
+	<!-- 일반 회원 수정 // 프로필 수정 -->
+	<update id="adminUpdateMemberImg" parameterType="int">
+		update f_member set mem_img = NULL where mem_num=#{mem_num}
+	</update>
+	
+	<!-- 일반 회원 수정 // 신고횟수 수정 -->
+	<update id="adminUpdateMemberReport" parameterType="int">
+		update f_member set mem_report=0 where mem_num=#{mem_num}
+	</update>
+	
+	<!-- 일반 회원 수정 // 상태메세지 수정 -->
+	<!-- <update id="adminUpdateMemberMsg" parameterType="int">
+		update f_member set mem_msg = NULL where mem_num=#{mem_num}
+	</update> -->
+	
+	<!-- 사업자 회원 목록 -->
+	<select id="adminListMemberB" resultType="memberDTO">
+		select * from f_member where mem_mode = '사업자' and mem_join = 1 order by mem_num asc
+	</select>
+	<!-- 사업자 회원 찾기 -->
+	<select id="adminFindMemberB" parameterType="map" resultType="memberDTO">
+		select * from (select * from f_member where mem_mode = '사업자' and mem_join = 1)A where ${search} like '%'||#{searchString}||'%'
+	</select>
+	<!-- 사업자 회원 가입 신청 내역 -->
+	<select id="adminJoinListMember" resultType="memberDTO">
+		select * from f_member where mem_mode = '사업자' and mem_join = 2 order by mem_num desc
+	</select>
+	<!-- 사업자 회원 가입 신청 승인 -->
+	<update id="adminJoinOkMember" parameterType="int">
+		update f_member set mem_join = 1 where mem_num = #{mem_num}
+	</update>
+	<!-- 사업자회원 비즈니스 프로필 생성 -->
+	<insert id="adminInsertBProfile" parameterType="int">
+		insert into f_business_profile (bp_num, mem_num, bp_location, bp_starrating) values (f_business_profile_seq.nextval, #{mem_num}, '주소 정보가 없습니다.', 0)
+		<!-- insert into f_business_profile values (f_business_profile_seq.nextval, #{mem_num}, '-', NULL, NULL, 0, NULL, NULL) -->
+	</insert>
+	<!-- 사업자회원 비즈니스 프로필 꺼내기 -->
+	<select id="adminGetBProfile" parameterType="int" resultType="businessProfileDTO">
+		select * from f_business_profile where mem_num = #{mem_num}
+	</select>
+	<!-- 비즈니스프로필 수정 // 정보 수정 -->
+	<update id="adminUpdateBPInfo" parameterType="int">
+		update f_business_profile set bp_info = NULL where bp_num = #{bp_num}
+	</update>
+	<!-- 비즈니스프로필 수정 // 이미지 수정 -->
+	<!-- <update id="adminUpdateBPImg" parameterType="int">
+		update f_business_profile set bp_img = NULL where bp_num = #{bp_num}
+	</update> -->
+	<!-- 비즈니스프로필 수정 // 주소 수정 -->
+	<update id="adminUpdateBPLocation" parameterType="int">
+		update f_business_profile set bp_location = '주소 정보가 없습니다.', bp_d_location = NULL where bp_num = #{bp_num}
+	</update>
+	<!-- 비즈니스프로필 수정 // 매장명 수정 -->
+	<update id="adminUpdateBPStore" parameterType="int">
+		update f_business_profile set bp_store_name = NULL where bp_num = #{bp_num}
+	</update>
+	<!-- 비즈니스프로필 수정 //  연락처 수정 -->
+	<update id="adminUpdateBPTel" parameterType="int">
+		update f_business_profile set bp_tel = NULL where bp_num = #{bp_num}
+	</update>
+	<!-- 비즈니스 프로필 삭제 -->
+	<delete id="adminDeleteBp" parameterType="int">
+		delete from f_business_profile where mem_num = #{mem_num}
+	</delete>
+	<!-- 회원 신고 내역 -->
+	<select id="adminListReportMember" resultType="reportDTO">
+		select r.*, m.mem_nickname from f_report r inner join f_member m on r.mem_num = m.mem_num where r.report_mode = '회원'
+	</select>
+	<!-- 미처리 회원 신고 내역 -->
+	<select id="adminSortReportMember" resultType="reportDTO">
+		select r.*, m.mem_nickname from f_report r inner join f_member m on r.mem_num = m.mem_num where r.report_mode = '회원' and r.report_check = 0
+	</select>
+	<!-- 회원 신고 내역 삭제 -->
+	<delete id="adminDelReportMember" parameterType="reportDTO">
+		delete from f_report where report_mode = #{report_mode} and report_num = #{report_num}
+	</delete>
+	<!-- 회원 신고 횟수 수정 -->
+	<update id="adminMinusReportMember" parameterType="int">
+		update f_member set mem_report = mem_report -1 where mem_num = #{mem_num}
+	</update>
+	<!-- 회원 신고 내역 처리 여부 0 ->1 -->
+	<update id="adminCheckReportMember" parameterType="int">
+		update f_report set report_check = 1 where report_target = #{report_target} and report_mode = '회원'
+	</update>
+	<!-- 해당 회원의 신고 내역 -->
+	<select id="adminGetReportMember" parameterType="int" resultType="reportDTO">
+		select r.*, m.mem_nickname from f_report r inner join f_member m on r.mem_num = m.mem_num where r.report_mode = '회원' and r.report_target = #{report_target}
+	</select>
+
+	<!-- 회원 프로필 꺼내기 -->
+	<select id="adminGetProfMember" parameterType="int" resultType="profileDTO">
+		select * from f_profile where mem_num = #{mem_num}
+	</select>
+
+	<!-- 회원 프로필 수정 // 이미지 -->
+	<update id="adminUpdateProfMemberImg" parameterType="int">
+		update f_profile set prof_img = 'default_profile.png' where mem_num = #{mem_num}
+	</update>
+	<!-- 회원 프로필 수정 // 상태메세지 -->
+	<update id="adminUpdateProfMemberMsg" parameterType="int">
+		update f_profile set prof_msg = NULL where mem_num = #{mem_num}
+	</update>
+	<!-- 피드 전체 신고 내역 -->
+	<select id="adminReportListFeed" resultType="reportDTO">
+		select * from f_report where report_mode = '피드' or report_mode = '피드댓글' order by report_num asc
+	</select>
+	<!-- 피드 미처리 신고 내역 -->
+	<select id="adminReportListFeedCheck" resultType="reportDTO">
+		select * from (select * from f_report where report_mode = '피드' or report_mode = '피드댓글')A  where A.report_check = 0 order by report_num asc
+	</select>
+	<!-- report_num 으로 꺼내기 -->
+	<select id="getReport" parameterType="int" resultType="reportDTO">
+		select * from f_report where report_num = #{report_num}
+	</select>
+	<!-- 해당 피드의 신고 내역 -->
+	<select id="adminGetFeedReport" parameterType="int" resultType="reportDTO">
+		select r.*, m.mem_nickname from (select * from f_report where report_mode = '피드' and report_target = #{report_target} ) r inner join f_member m on r.mem_num = m.mem_num
+	</select>
+	<!-- 해당 피드댓글의 신고 내역 -->
+	<select id="adminGetFeedReplyReport" parameterType="int" resultType="reportDTO">
+		select r.*, m.mem_nickname from (select * from f_report where report_mode = '피드댓글' and report_target = #{report_target} ) r inner join f_member m on r.mem_num = m.mem_num
+	</select>
+	<!-- 피드 신고 취소 -->
+	<delete id="adminFeedReportDel" parameterType="int">
+		delete from f_report where report_mode = '피드' and report_target = #{report_target}
+	</delete>
+	<!-- 피드 댓글 신고 취소 -->
+	<delete id="adminFeedReplyReportDel" parameterType="int">
+		delete from f_report where report_mode = '피드댓글' and report_target = #{report_target}
+	</delete>
+	<!-- 피드 자체 신고 report 0으로 수정 -->
+	<update id="adminFeedReport0" parameterType="int">
+		update f_feed set feed_report = 0 where feed_num = #{feed_num}
+	</update>
+	<!-- fr_num 의 fr_report 0으로 수정 -->
+	<update id="adminFeedReplyReport0" parameterType="int">
+		update f_feedreply set fr_report = 0 where fr_num = #{fr_num}
+	</update>
+	<!-- 피드 신고 처리 여부 0 -> 1 로 수정 -->
+	<update id="adminFeedReportCheck" parameterType="int">
+		update f_report set report_check = 1 where report_mode ='피드' and report_target = #{report_target}
+	</update>
+	<!-- 피드댓글 신고 처리 여부 0 -> 1 로 수정 -->
+	<update id="adminFeedReplyReportCheck" parameterType="int">
+		update f_report set report_check = 1 where report_mode ='피드댓글' and report_target = #{report_target}
+	</update>
+	<!-- 해당 피드의 피드태그 목록 -->
+	<select id="adminGetFeedThemeList" parameterType="int" resultType="feed_themeDTO">
+		select * from f_feed_theme where feed_num = #{feed_num}
+	</select>
+	<!-- 탈퇴 내역 -->
+	<select id="adminMemberBye" resultType="dontgoDTO">
+		select * from f_dontgo
+	</select>
+	<!-- fr_num 으로 feed_num 꺼내기 -->
+	<select id="adminGetFeedReply" parameterType="int" resultType="int">
+		select feed_num from f_feedreply where fr_num = #{fr_num}
+	</select>
+	<!-- fr_num 으로 댓글 삭제 -->
+	<delete id="adminFeedReplyDel" parameterType="int">
+		delete from f_feedreply where fr_num = #{fr_num}
+	</delete>
+	<!-- 전체 회원 목록 -->
+	<select id="adminTotalMemberList" resultType="memberDTO">
+		select * from f_member
+	</select>
+	
+</mapper>
