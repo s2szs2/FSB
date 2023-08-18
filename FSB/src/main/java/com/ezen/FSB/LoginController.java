@@ -70,7 +70,7 @@ public class LoginController {
  */
 
 
-	@RequestMapping("/login.do") //로그인 인덱스로 이동
+	@RequestMapping("/login.do") // 로그인 인덱스로 이동
 	public String login(HttpSession session, HttpServletRequest req) {
 	
 	//========================카카오url보내기========
