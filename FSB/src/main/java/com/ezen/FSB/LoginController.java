@@ -79,7 +79,6 @@ public class LoginController {
 	
 	// 네이버 URL 보내기
 	String naverAuthUrl = naverLoginBO.getAuthorizationUrl(session);
-	System.out.println("네이버:" + naverAuthUrl);
 	req.setAttribute("naver_url", naverAuthUrl);
 		
 	return "login/login";
