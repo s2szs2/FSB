@@ -188,8 +188,8 @@
  		where review_num = #{review_num}
  	</delete>
  	
- 	<!-- 한줄평 신고기능에 사용할 쿼리문 -->
- 	<insert id="GameReviewReport" parameterType="ReportDTO">
+ 	<!-- 한줄평 신고기능, 회원 신고기능에 사용할 쿼리문 -->
+ 	<insert id="GameReport" parameterType="ReportDTO">
  		insert into f_report values(f_report_seq.nextval, 
  		#{mem_num}, 
  		#{report_target}, 

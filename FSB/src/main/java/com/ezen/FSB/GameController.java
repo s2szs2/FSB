@@ -48,8 +48,10 @@ public class GameController {
 	@RequestMapping("game_list.do")
 	public ModelAndView game_list(HttpServletRequest req) {
 		ModelAndView mav = new ModelAndView("game/game_list");
+		// 보드게임 리스트
 		List<GameDTO> list = gameMapper.listGame();
 		mav.addObject("listGame", list);
+		// 테마 리스트
 		List<ThemeDTO> tlist = adminGameMapper.listTheme();
 		mav.addObject("listTheme", tlist);
 		return mav;
@@ -60,9 +62,10 @@ public class GameController {
 	@RequestMapping("game_find.do")
 	public ModelAndView game_find(HttpServletRequest req, String searchString) {
 		ModelAndView mav = new ModelAndView("game/game_list");
-
+		// 검색한 보드게임 리스트(searchString 키워드로 검색)
 		List<GameDTO> list = gameMapper.findGame(searchString);
 		mav.addObject("listGame", list);
+		// 테마 리스트
 		List<ThemeDTO> tlist = adminGameMapper.listTheme();
 		mav.addObject("listTheme", tlist);
 		return mav;
@@ -84,6 +87,7 @@ public class GameController {
 	         
 	    } else if (theme.size() != 0) {
 	       for(String t : theme) {
+	    	  // 선택한 테마의 보드게임 리스트
 	          tlist2 = gameMapper.checkListGame1(Integer.parseInt(t));
 	          for(GameDTO dto : tlist2) {
 	             ht.put(dto.getGame_num(), dto);
@@ -94,6 +98,7 @@ public class GameController {
 	         
 	    } else if (game_player.size() != 0) {
 	       for(String p : game_player) {
+	    	  // 선택한 인원의 보드게임 리스트
 	          tlist2 = gameMapper.checkListGame2(Integer.parseInt(p));
 	          for(GameDTO dto : tlist2) {
 	             ht.put(dto.getGame_num(), dto);
@@ -104,6 +109,7 @@ public class GameController {
 	         
 	    } else if (game_level.size() != 0) {
 	       for(String l : game_level) {
+	    	  // 선택한 인원의 보드게임 리스트
 	          tlist2 = gameMapper.checkListGame3(Integer.parseInt(l));
 	          for(GameDTO dto : tlist2) {
 	             ht.put(dto.getGame_num(), dto);
@@ -126,22 +132,27 @@ public class GameController {
 	public ModelAndView game_sort(String sort) {
 		ModelAndView mav = new ModelAndView();
 		if (sort.equals("game_name")) {
+			// 이름 순 정렬 리스트
 			List<GameDTO> list = gameMapper.sortGame1(sort);
 			mav.setViewName("game/game_list");
 			mav.addObject("listGame", list);
 		} else if (sort.equals("game_player")) {
+			// 인원 순 정렬 리스트
 			List<GameDTO> list = gameMapper.sortGame2(sort);
 			mav.setViewName("game/game_list");
 			mav.addObject("listGame", list);
 		} else if (sort.equals("game_level")) {
+			// 난이도 순 정렬 리스트
 			List<GameDTO> list = gameMapper.sortGame3(sort);
 			mav.setViewName("game/game_list");
 			mav.addObject("listGame", list);
 		} else {
+			// 좋아요 순 정렬 리스트
 			List<GameDTO> list = gameMapper.sortGame4(sort);
 			mav.setViewName("game/game_list");
 			mav.addObject("listGame", list);
 		}
+		// 테마 리스트
 		List<ThemeDTO> tlist = adminGameMapper.listTheme();
 		mav.addObject("listTheme", tlist);
 		return mav;
@@ -159,7 +170,8 @@ public class GameController {
 		// 좋아요 총 개수
 		int likeCount = gameMapper.gameLikeCount(game_num);
 		mav.addObject("likeCount", likeCount);
-			
+		
+		// 회원 번호
 		HttpSession session = req.getSession();
 		MemberDTO dto2 = (MemberDTO)session.getAttribute("login_mem");
 		int mem_num;
@@ -191,7 +203,6 @@ public class GameController {
 		int count = gameMapper.getCount(game_num);
 		if (count != 0) {
 		int reviewAvg = gameMapper.reviewAvg(game_num);
-		//tem.out.println("평균 어딨니" + reviewAvg);
 			mav.addObject("reviewAvg", reviewAvg);
 			mav.addObject("count", count);
 		}
@@ -225,12 +236,16 @@ public class GameController {
 		List<ReviewDTO> list = null;
 		if (count > 0) {
 			if (sort.equals("review_regdate1")) {
+				// 최신 순 정렬 리스트
 				list = gameMapper.sortReview1(params);
 			} else if (sort.equals("review_regdate2")) {
+				// 오래된 순 정렬 리스트
 				list = gameMapper.sortReview2(params);
 			} else if (sort.equals("review_starrating1")) {
+				// 별점 높은 순 정렬 리스트
 				list = gameMapper.sortReview3(params);
 			} else if (sort.equals("review_starrating2")){
+				// 별점 낮은 순 정렬 리스트
 				list = gameMapper.sortReview4(params);
 			} else {	// sort = "all"
 				list = gameMapper.listReview(params);
@@ -261,18 +276,22 @@ public class GameController {
 	@RequestMapping(value = "gameLike.do")
 	public ModelAndView gameLike(HttpServletRequest req, int game_num) {
 		HttpSession session = req.getSession();
+		// 회원 번호
 		MemberDTO dto2 = (MemberDTO)session.getAttribute("login_mem");
+		
 		GameLikeDTO dto = new GameLikeDTO();
-
 		dto.setMem_num(dto2.getMem_num());
 		dto.setGame_num(game_num);
 		
 		ModelAndView mav = new ModelAndView();
+		// 좋아요 클릭 시 등록
 		int res = gameMapper.GameLike(dto);
 		if (res > 0) {
 			GameDTO dto3 = new GameDTO();
+			// 좋아요 총 개수 구하기
 			int likeCount = gameMapper.gameLikeCount(game_num);
 			dto3.setGame_likeCount(likeCount);
+			
 			// gameDTO에 game_likeCount update하기
 			Map<String, Integer> params = new HashMap<>();
 			params.put("game_likeCount", dto3.getGame_likeCount());
@@ -289,17 +308,22 @@ public class GameController {
 	@RequestMapping(value = "gameLikeDelete.do")
 	public ModelAndView gameLikeDelete(HttpServletRequest req, int game_num) {
 		HttpSession session = req.getSession();
+		// 회원 번호
 		MemberDTO dto = (MemberDTO)session.getAttribute("login_mem");		
 
 		Map<String, Integer> params = new HashMap<>();
 		params.put("game_num", game_num);
 		params.put("mem_num", dto.getMem_num());
+		
 		ModelAndView mav = new ModelAndView();
+		// 좋아요 해제
 		int res = gameMapper.gameLikeDelete(params);
 		if (res > 0) {
 			GameDTO dto2 = new GameDTO();
+			// 좋아요 총 개수 구하기
 			int likeCount = gameMapper.gameLikeCount(game_num);
 			dto2.setGame_likeCount(likeCount);
+			
 			// gameDTO에 game_likeCount update하기
 			Map<String, Integer> params2 = new HashMap<>();
 			params2.put("game_likeCount", dto2.getGame_likeCount());
@@ -316,6 +340,7 @@ public class GameController {
 		ModelAndView mav = new ModelAndView();
 		mav.addObject("mem_num", mem_num);
 		mav.setViewName("user/member_report");
+		
 		return mav;
 	}
 	
@@ -323,10 +348,15 @@ public class GameController {
 	@RequestMapping("mem_reportOk.do")
 	public ModelAndView memReportOk(HttpServletRequest req, @ModelAttribute ReportDTO dto, @RequestParam int mem_report) {
 	    ModelAndView mav = new ModelAndView("closeWindow");
-
+	    
+	    // ReportDTO 세팅
 	    dto.setReport_content(mem_report);
 	    dto.setReport_mode("회원");
-	    gameMapper.GameReviewReport(dto);
+	    
+	    // ReportDTO에 등록
+	    gameMapper.GameReport(dto);
+	    
+	    // 신고 되었을 때 +1 update
 	    int res = gameMapper.updateMemReport(dto.getReport_target());
 	    if (res > 0) {
 	       mav.addObject("msg", "신고되었습니다.");
@@ -347,6 +377,7 @@ public class GameController {
 		if (result.hasErrors()) {}
 		
 		HttpSession session = req.getSession();
+		// 회원 번호
 		MemberDTO dto2 = (MemberDTO)session.getAttribute("login_mem");
 		// MemberDTO에 있는 Mem_num으로 ReviewDTO에 넣어주기
 		dto.setMem_num(dto2.getMem_num());
@@ -432,12 +463,19 @@ public class GameController {
 		ModelAndView mav = new ModelAndView("closeWindow");
 
 		HttpSession session = req.getSession();
+		// 회원 번호
 		MemberDTO dto2 = (MemberDTO)session.getAttribute("login_mem");
+		
+		// ReportDTO 세팅
 		dto.setMem_num(dto2.getMem_num());
 		dto.setReport_content(review_report);
 		dto.setReport_target(review_num);
 		dto.setReport_mode("보드게임한줄평");
-		gameMapper.GameReviewReport(dto);
+		
+		// ReportDTO에 등록
+		gameMapper.GameReport(dto);
+		
+	    // 신고 되었을 때 +1 update
 		int res = gameMapper.updateReviewReport(review_num);
 		if (res > 0) {
 			mav.addObject("msg", "신고되었습니다.");
@@ -454,18 +492,18 @@ public class GameController {
 	public ModelAndView game_tag(int game_num) {
 		ModelAndView mav = new ModelAndView("game/game_tag");
 		
-		// 게임 가져오기
+		// 보드게임 가져오기
 		GameDTO dto = gameMapper.getGame(game_num);
 		mav.addObject("getGame", dto);
 		
-		// 게임 번호 별 피드
+		// 보드게임 번호 별 피드
 		List<FeedDTO> flist = feedMapper.getGameFeedList(game_num); 
 		mav.addObject("listFeed", flist);
 		
 		return mav;
 	}
 	
-	// 게임 리스트						
+	// 보드게임 리스트						
 	@RequestMapping("feed_game_list.do")						
 	public ModelAndView feed_game_list(HttpServletRequest req) {						
 		ModelAndView mav = game_list(req);					

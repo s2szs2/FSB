@@ -126,9 +126,9 @@ public class GameMapper {
 		return sqlSession.delete("deleteReview", review_num);
 	}
 	
-	// 한줄평 신고를 위한 메소드
-	public int GameReviewReport(ReportDTO dto) {
-		return sqlSession.insert("GameReviewReport", dto);
+	// 한줄평 신고, 회원 신고를 위한 메소드
+	public int GameReport(ReportDTO dto) {
+		return sqlSession.insert("GameReport", dto);
 	}
 	
 	// 신고를 눌렀을 때 +1 증가
